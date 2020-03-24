@@ -6,8 +6,19 @@
 </head>
 <body>
 
-    <p>Hi there!</p>
-    <p>It works!</p>
+    <div>
+        <h1><a href="/">Изделия</a></h1>
+        <hr>
+    </div>
+
+    {% for product in products %}
+        <div>
+            <h2><a href="">{{ product.name }}</a></h2>
+            <p>published: {{ product.published_date }}</p>
+            <p>{{ product.description|linebreaksbr }}</p>
+            <hr>
+        </div>
+    {% endfor %}
 
 </body>
 </html>
