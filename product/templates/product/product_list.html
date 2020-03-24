@@ -1,7 +1,13 @@
 <!DOCTYPE html>
+
+{% load static %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="{% static 'css/product.css' %}">
     <title>Products</title>
 </head>
 <body>
@@ -14,7 +20,7 @@
     {% for product in products %}
         <div>
             <h2><a href="">{{ product.name }}</a></h2>
-            <p>published: {{ product.published_date }}</p>
+            <p>дата: {{ product.published_date }}</p>
             <p>{{ product.description|linebreaksbr }}</p>
             <hr>
         </div>
