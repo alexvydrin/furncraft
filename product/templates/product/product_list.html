@@ -17,14 +17,28 @@
         <hr>
     </div>
 
-    {% for product in products %}
-        <div>
-            <h2><a href="">{{ product.name }}</a></h2>
-            <p>дата: {{ product.published_date }}</p>
-            <p>{{ product.description|linebreaksbr }}</p>
-            <hr>
-        </div>
-    {% endfor %}
+    <table border="1">
+
+        <tr>
+            <td style="text-align: center"> Наименование </td>
+            <td style="text-align: center"> Цена расчетная </td>
+            <td style="text-align: center"> Цена факт </td>
+            <td style="text-align: center"> Дата </td>
+        </tr>
+
+        {% for product in products %}
+
+            <tr>
+                <td> <a href="">{{ product.name }}</a> </td>
+                <td style="text-align: right"> {{ product.price_calc }} </td>
+                <td style="text-align: right"> {{ product.price_doc }} </td>
+                <td> {{product.published_date}} </td>
+
+            </tr>
+
+        {% endfor %}
+
+    </table>
 
 </body>
 </html>

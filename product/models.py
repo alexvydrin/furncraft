@@ -11,6 +11,8 @@ class Product(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)
+    price_calc = models.DecimalField(decimal_places=2, max_digits=10, default = None, null=True)
+    price_doc = models.DecimalField(decimal_places=2, max_digits=10, default = None, null=True)
 
     def publish(self):
         self.published_date = timezone.now()
