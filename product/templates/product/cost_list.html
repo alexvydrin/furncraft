@@ -1,0 +1,28 @@
+
+{% extends 'product/base.html' %}
+
+{% block content %}
+
+    <table>
+
+        <tr>
+            <td style="text-align: center"> Наименование </td>
+            <td style="text-align: center"> Цена </td>
+            <td style="text-align: center"> Отходы % </td>
+            <td style="text-align: center"> Порядок </td>
+        </tr>
+
+        {% for cost in costs %}
+
+            <tr>
+                <td> <a href="">{{ cost.name }}</a> </td>
+                <td style="text-align: right"> {{ cost.price }} </td>
+                <td style="text-align: right"> {{ cost.waste_percent }} </td>
+                <td style="text-align: right"> {{cost.sort}}  </td>
+            </tr>
+
+        {% endfor %}
+
+    </table>
+
+{% endblock %}
