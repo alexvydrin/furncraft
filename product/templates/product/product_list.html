@@ -1,23 +1,9 @@
-<!DOCTYPE html>
 
-{% load static %}
+{% extends 'product/base.html' %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="{% static 'css/product.css' %}">
-    <title>Products</title>
-</head>
-<body>
+{% block content %}
 
-    <div>
-        <h1><a href="/">Изделия</a></h1>
-        <hr>
-    </div>
-
-    <table border="1">
+    <table>
 
         <tr>
             <td style="text-align: center"> Наименование </td>
@@ -29,16 +15,14 @@
         {% for product in products %}
 
             <tr>
-                <td> <a href="">{{ product.name }}</a> </td>
+                <td> <a href="{% url 'product_detail' pk=product.pk %}">{{ product.name }}</a> </td>
                 <td style="text-align: right"> {{ product.price_calc }} </td>
                 <td style="text-align: right"> {{ product.price_doc }} </td>
                 <td> {{product.published_date}} </td>
-
             </tr>
 
         {% endfor %}
 
     </table>
 
-</body>
-</html>
+{% endblock %}
