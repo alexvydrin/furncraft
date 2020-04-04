@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Cost
+from .unit_import import import_pricelist_code
+
 # from django.utils import timezone
 
 
@@ -21,3 +23,12 @@ def product_detail(request, pk):
 def cost_list(request):
     costs = Cost.objects.order_by('name')
     return render(request, 'product/cost_list.html', {'costs': costs})
+
+
+def import_main(request):
+    return render(request, 'product/import_main.html')
+
+
+def import_pricelist(request):
+    log = import_pricelist_code()
+    return render(request, 'product/import_result.html', {'log': log})
