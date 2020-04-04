@@ -1,0 +1,18 @@
+
+{% extends 'product/base.html' %}
+
+{% block content %}
+
+    <table>
+
+        {% for s in log %}
+
+        <tr>
+            <td> {{ s }} </td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+{% endblock %}
