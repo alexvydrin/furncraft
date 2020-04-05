@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Cost
-from .unit_import import import_pricelist_code, import_cost_code, test_import_pricelist_code
+from .unit_import import import_pricelist_code, import_cost_code,\
+    test_import_pricelist_code, test_import_cost_code
 
 # from django.utils import timezone
 
@@ -45,4 +46,9 @@ def import_cost(request):
 
 def test_import_pricelist(request):
     log = test_import_pricelist_code()
+    return render(request, 'product/log_result.html', {'log': log})
+
+
+def test_import_cost(request):
+    log = test_import_cost_code()
     return render(request, 'product/log_result.html', {'log': log})
