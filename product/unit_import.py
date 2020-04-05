@@ -119,14 +119,11 @@ def test_import_pricelist_code():
     return log
 
 
-def import_cost_code():
-
-    log = [f"Импорт справочника затрат - начало"]
+def get_d_cost(log):
 
     f = r"static/data/себест общ новая.xlsx"
 
     d_cost = []
-    n_count_added = 0
 
     wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
 
@@ -161,6 +158,17 @@ def import_cost_code():
             else:  # добавляем только уникальные позиции
                 d_cost.append(i_cost)
 
+    return d_cost
+
+
+def import_cost_code():
+
+    log = [f"Импорт справочника затрат - начало"]
+
+    n_count_added = 0
+
+    d_cost = get_d_cost(log)
+
     # добавляем данные в базу данных
     from product.models import Cost
 
@@ -176,4 +184,54 @@ def import_cost_code():
 
     log.append(f"Импорт справочника затрат окончен. Всего затрат в калькуляции: {len(d_cost)}, "
                f"из них импортировано: {n_count_added}")
+    return log
+
+
+def test_import_cost_code():
+    """
+        тестирование идентичности данных в калькуляции (файл эксель) и в базе данных
+        проверяются следующие ошибки:
+        1) в файле эксель есть статья затрат, а в базе данных нет
+        2) значение price различается
+        3) в базе данных есть статья затрат, а в файле эксель нет
+    """
+
+    from product.models import Cost
+
+    log = [f"Тестирование идентичности статей затрат в калькуляции (файл эксель) и в базе данных"]
+
+    d_cost_calc = get_d_cost(log)
+
+    n_count = 0
+
+    for i_cost_calc in d_cost_calc:
+        name = i_cost_calc['name']
+        if not len(Cost.objects.filter(name=name)):
+            log.append(f"Ошибка: В файле эксель есть статья затрат, а в базе данных нет: {name}")
+            n_count += 1
+            continue
+        price = i_cost_calc['price']
+        waste_percent = i_cost_calc['waste_percent']
+        i_cost = Cost.objects.get(name=name)
+        if price != i_cost.price:
+            log.append(f"Ошибка: В файле эксель цена = {price}, а в базе данных цена = {i_cost.price}:"
+                       f" {name}")
+            n_count += 1
+        if waste_percent != i_cost.waste_percent:
+            log.append(f"Ошибка: В файле эксель процент отходов = {waste_percent}, "
+                       f"а в базе данных цена = {i_cost.waste_percent}: {name}")
+            n_count += 1
+
+    products = Cost.objects.all()
+    for i_product in products:
+        name = i_product.name
+        # ищем простым перебором
+        for i_cost_calc in d_cost_calc:
+            if i_cost_calc['name'] == name:
+                break
+        else:
+            log.append(f"Ошибка: В базе данных есть статья затрат, а в файле эксель нет: {name}")
+            n_count += 1
+
+    log.append(f"Тестирование окончено. Всего ошибок найдено: {n_count}")
     return log

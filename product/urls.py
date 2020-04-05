@@ -11,4 +11,5 @@ urlpatterns = [
     path('import_pricelist/', views.import_pricelist, name='import_pricelist'),
     path('import_cost/', views.import_cost, name='import_cost'),
     path('test_import_pricelist/', views.test_import_pricelist, name='test_import_pricelist'),
+    path('test_import_cost/', views.test_import_cost, name='test_import_cost'),
 ]
