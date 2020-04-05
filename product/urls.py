@@ -9,6 +9,6 @@ urlpatterns = [
     path('import_main/', views.import_main, name='import_main'),
     path('test_main/', views.test_main, name='test_main'),
     path('import_pricelist/', views.import_pricelist, name='import_pricelist'),
+    path('import_cost/', views.import_cost, name='import_cost'),
     path('test_import_pricelist/', views.test_import_pricelist, name='test_import_pricelist'),
-
 ]

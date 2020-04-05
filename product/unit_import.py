@@ -117,3 +117,63 @@ def test_import_pricelist_code():
 
     log.append(f"Тестирование окончено. Всего ошибок найдено: {n_count}")
     return log
+
+
+def import_cost_code():
+
+    log = [f"Импорт справочника затрат - начало"]
+
+    f = r"static/data/себест общ новая.xlsx"
+
+    d_cost = []
+    n_count_added = 0
+
+    wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
+
+    for sheetname in wb.sheetnames:
+        if sheetname[0:4] != "себ ":
+            continue
+        ws = wb[sheetname]
+        rows = ws.max_row
+        for r in range(1, rows + 1):
+            name = ws.cell(row=r, column=1).value
+            price = ws.cell(row=r, column=2).value or 0
+            waste_percent = ws.cell(row=r, column=3).value or 0
+            if not name or not isinstance(name, str):
+                continue
+            name = del_double_space(name.strip())
+            if name == "себестоимость":
+                break
+            i_cost = {
+                'name': name,
+                'price': price,
+                'waste_percent': waste_percent
+            }
+            # проверяем на повторение
+            for i in d_cost:
+                if i['name'] == i_cost['name']:
+                    if i['price'] != i_cost['price']:
+                        log.append(f"Цена у материала {i['name']} отличается {i['price']} != {i_cost['price']}")
+                    if i['waste_percent'] != i_cost['waste_percent']:
+                        log.append(f"Доля потерь(обрези) у материала {i['name']} отличается "
+                                   f"{i['waste_percent']} != {i_cost['waste_percent']}")
+                    break
+            else:  # добавляем только уникальные позиции
+                d_cost.append(i_cost)
+
+    # добавляем данные в базу данных
+    from product.models import Cost
+
+    sort = 0
+    for i_cost in d_cost:
+        sort += 10
+        name = i_cost['name']
+        price = i_cost['price']
+        waste_percent = i_cost['waste_percent']
+        if not len(Cost.objects.filter(name=name)):
+            Cost.objects.create(name=name, price=price, waste_percent=waste_percent, sort=sort)
+            n_count_added += 1
+
+    log.append(f"Импорт справочника затрат окончен. Всего затрат в калькуляции: {len(d_cost)}, "
+               f"из них импортировано: {n_count_added}")
+    return log
