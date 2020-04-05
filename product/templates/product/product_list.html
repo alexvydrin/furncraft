@@ -9,16 +9,16 @@
             <td style="text-align: center"> Наименование </td>
             <td style="text-align: center"> Цена расчетная </td>
             <td style="text-align: center"> Цена факт </td>
-            <td style="text-align: center"> Дата </td>
+            <!-- <td style="text-align: center"> Дата </td> -->
         </tr>
 
         {% for product in products %}
 
             <tr>
                 <td> <a href="{% url 'product_detail' pk=product.pk %}">{{ product.name }}</a> </td>
-                <td style="text-align: right"> {{ product.price_calc }} </td>
+                <td style="text-align: right"> {{ product.price_calc|default_if_none:"" }} </td>
                 <td style="text-align: right"> {{ product.price_doc }} </td>
-                <td> {{product.published_date}} </td>
+                <!-- <td> {{product.published_date}} </td> -->
             </tr>
 
         {% endfor %}
