@@ -33,3 +33,12 @@ class Cost(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Calculation(models.Model):
+    product_id = models.ForeignKey(Product, on_delete=models.CASCADE)
+    cost_id = models.ForeignKey(Cost, on_delete=models.PROTECT)
+    amount = models.FloatField(blank=True, null=True)
+    waste_percent = models.FloatField(blank=True, null=True)
+    cost_add = models.FloatField(blank=True, null=True)
+    description = models.CharField(blank=True, max_length=200)
