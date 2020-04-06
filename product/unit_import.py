@@ -235,3 +235,60 @@ def test_import_cost_code():
 
     log.append(f"Тестирование окончено. Всего ошибок найдено: {n_count}")
     return log
+
+
+def get_d_calculation(log):
+
+    f = r"static/data/себест общ новая.xlsx"
+
+    d_calculation = []
+
+    wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
+
+    for sheetname in wb.sheetnames:
+        if sheetname[0:4] != "себ ":
+            continue
+        ws = wb[sheetname]
+        columns = ws.max_column
+
+        # rows = ws.max_row
+        product_type = "unknown"
+
+        for c in range(1, columns + 1):
+            name_calc = ws.cell(row=2, column=c).value
+            if not name_calc or not isinstance(name_calc, str):
+                continue
+            #  name_calc = del_double_space(name_calc.strip())
+
+            # подставляем метку серии в название
+            product_type = "unknown"
+            if sheetname[4:7] == "эко":
+                product_type = "э"
+            elif sheetname[4:9] == "станд":
+                product_type = "стандарт"
+            elif sheetname[4:12] == "мдф лайт":
+                product_type = "лайт"
+            elif sheetname[4:7] == "мдф":
+                product_type = "мдф"
+            elif sheetname[4:7] == "мдф":
+                product_type = "мдф"
+            elif sheetname[4:9] == "устар":
+                product_type = "прочее"
+
+        log.append(f"{product_type}")
+
+        break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
+
+    return d_calculation
+
+
+def import_calculation_code():
+    log = [f"Импорт калькуляции изделий - начало"]
+
+    n_count_added = 0
+
+    d_calculation = get_d_calculation(log)
+
+    log.append(f"Импорт калькуляции изделий окончен. Всего строк в калькуляции: {len(d_calculation)}, "
+               f"из них импортировано: {n_count_added}")
+    return log

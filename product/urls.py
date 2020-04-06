@@ -10,6 +10,7 @@ urlpatterns = [
     path('test_main/', views.test_main, name='test_main'),
     path('import_pricelist/', views.import_pricelist, name='import_pricelist'),
     path('import_cost/', views.import_cost, name='import_cost'),
+    path('import_calculation/', views.import_calculation, name='import_calculation'),
     path('test_import_pricelist/', views.test_import_pricelist, name='test_import_pricelist'),
     path('test_import_cost/', views.test_import_cost, name='test_import_cost'),
 ]
