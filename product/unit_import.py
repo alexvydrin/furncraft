@@ -239,6 +239,8 @@ def test_import_cost_code():
 
 def get_d_calculation(log):
 
+    from product.models import Product, Cost
+
     f = r"static/data/себест общ новая.xlsx"
 
     d_calculation = []
@@ -250,15 +252,13 @@ def get_d_calculation(log):
             continue
         ws = wb[sheetname]
         columns = ws.max_column
-
-        # rows = ws.max_row
-        product_type = "unknown"
+        rows = ws.max_row
 
         for c in range(1, columns + 1):
             name_calc = ws.cell(row=2, column=c).value
             if not name_calc or not isinstance(name_calc, str):
                 continue
-            #  name_calc = del_double_space(name_calc.strip())
+            name_calc = del_double_space(name_calc.strip())
 
             # подставляем метку серии в название
             product_type = "unknown"
@@ -275,7 +275,53 @@ def get_d_calculation(log):
             elif sheetname[4:9] == "устар":
                 product_type = "прочее"
 
-        log.append(f"{product_type}")
+            name_calc += " " + product_type
+
+            # код изделия
+            product_id = Product.objects.get(name=name_calc)
+            if not product_id:
+                log.append(f"Ошибка: В файле эксель изделие, которого нет в справочнике изделий: {name_calc}")
+            # product.models.Product.DoesNotExist:
+
+            # проверяем на повторение
+            for i in d_calculation:
+                if i['product_id'] == product_id:
+                    log.append(f"Ошибка: В файле эксель повторяется изделие: {name_calc}")
+                    break
+            else:  # добавляем только уникальные позиции
+
+                for r in range(1, rows + 1):
+                    name = ws.cell(row=r, column=1).value
+
+                    if not name or not isinstance(name, str):
+                        continue
+                    name = del_double_space(name.strip())
+
+                    # код статьи расходов
+                    try:
+                        cost_id = Cost.objects.get(name=name)
+                    except:
+                        log.append(f"Ошибка: В файле эксель статья затрат, которой нет в справочнике: {name}")
+                        continue
+
+                    amount = ws.cell(row=r, column=c).value or 0
+                    cost_add = 0
+                    if not amount:
+                        cost_add = ws.cell(row=r, column=c+1).value or 0
+
+                    if name == "себестоимость":
+                        break
+
+                    i_calculation = {
+                        'product_id': product_id,
+                        'cost_id': cost_id,
+                        'amount': amount,
+                        'cost_add': cost_add
+                    }
+
+                    d_calculation.append(i_calculation)
+
+            break  # потом эту строчку уберем, сейчас импортируем только одно изделие
 
         break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
 
@@ -288,6 +334,17 @@ def import_calculation_code():
     n_count_added = 0
 
     d_calculation = get_d_calculation(log)
+
+    # добавляем данные в базу данных
+    from product.models import Calculation
+
+    for i_calculation in d_calculation:
+        product_id = i_calculation['product_id']
+        if not len(Calculation.objects.filter(product_id=product_id)):
+            #  Cost.objects.create(name=name, price=price, waste_percent=waste_percent, sort=sort)
+            log.append(f"{product_id}")
+
+            n_count_added += 1
 
     log.append(f"Импорт калькуляции изделий окончен. Всего строк в калькуляции: {len(d_calculation)}, "
                f"из них импортировано: {n_count_added}")
