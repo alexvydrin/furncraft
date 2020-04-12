@@ -278,10 +278,11 @@ def get_d_calculation(log):
             name_calc += " " + product_type
 
             # код изделия
-            product_id = Product.objects.get(name=name_calc)
-            if not product_id:
+            try:
+                product_id = Product.objects.get(name=name_calc)
+            except Product.DoesNotExist:
                 log.append(f"Ошибка: В файле эксель изделие, которого нет в справочнике изделий: {name_calc}")
-            # product.models.Product.DoesNotExist:
+                continue
 
             # проверяем на повторение
             for i in d_calculation:
@@ -297,10 +298,14 @@ def get_d_calculation(log):
                         continue
                     name = del_double_space(name.strip())
 
+                    # условие выхода их цикла - статьи кончились
+                    if name == "себестоимость":
+                        break
+
                     # код статьи расходов
                     try:
                         cost_id = Cost.objects.get(name=name)
-                    except:
+                    except Cost.DoesNotExist:
                         log.append(f"Ошибка: В файле эксель статья затрат, которой нет в справочнике: {name}")
                         continue
 
@@ -309,19 +314,16 @@ def get_d_calculation(log):
                     if not amount:
                         cost_add = ws.cell(row=r, column=c+1).value or 0
 
-                    if name == "себестоимость":
-                        break
+                    if amount or cost_add:
 
-                    i_calculation = {
-                        'product_id': product_id,
-                        'cost_id': cost_id,
-                        'amount': amount,
-                        'cost_add': cost_add
-                    }
+                        i_calculation = {
+                            'product_id': product_id,
+                            'cost_id': cost_id,
+                            'amount': amount,
+                            'cost_add': cost_add
+                        }
 
-                    d_calculation.append(i_calculation)
-
-            break  # потом эту строчку уберем, сейчас импортируем только одно изделие
+                        d_calculation.append(i_calculation)
 
         break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
 
@@ -340,12 +342,66 @@ def import_calculation_code():
 
     for i_calculation in d_calculation:
         product_id = i_calculation['product_id']
-        if not len(Calculation.objects.filter(product_id=product_id)):
-            #  Cost.objects.create(name=name, price=price, waste_percent=waste_percent, sort=sort)
-            log.append(f"{product_id}")
-
+        cost_id = i_calculation['cost_id']
+        amount = i_calculation['amount']
+        cost_add = i_calculation['cost_add']
+        if not len(Calculation.objects.filter(product_id=product_id, cost_id=cost_id)):
+            Calculation.objects.create(product_id=product_id, cost_id=cost_id, amount=amount, cost_add=cost_add)
             n_count_added += 1
 
     log.append(f"Импорт калькуляции изделий окончен. Всего строк в калькуляции: {len(d_calculation)}, "
                f"из них импортировано: {n_count_added}")
+    return log
+
+
+def re_price_calc_code():
+
+    from product.models import Calculation, Product
+
+    log = [f"Пересчет расчетных цен - начало"]
+
+    n_count_added = 0
+
+    calculations = Calculation.objects.all()
+
+    items = []
+
+    for calculation in calculations:
+
+        # Смотрим указана ли для данного изделия уточненная доля отходов
+        if calculation.waste_percent:  # да, указана
+            waste_percent_fact = calculation.waste_percent
+        else:  # нет, не указано
+            waste_percent_fact = calculation.cost_id.waste_percent
+
+        summ = (calculation.cost_id.price or 0) * (1 + (waste_percent_fact or 0)) * (calculation.amount or 0)
+        summ += calculation.cost_add or 0
+
+        item = {
+            'product_id': calculation.product_id,
+            'price_calc': summ
+        }
+
+        # ищем простым перебором
+        for i_item in items:
+            if i_item['product_id'] == item['product_id']:
+                i_item['price_calc'] += item['price_calc']
+                break
+        else:
+            items.append(item)
+
+    # коэффициент наценки для получения оптовой цены - цена со склада
+    ratio_storage = 1.36
+    # коэффициент наценки для получения розничной цены - цена в магазине
+    ratio_shop = 1.4
+    # общий коэффициент
+    ratio = ratio_storage * ratio_shop
+    for i_item in items:
+        i_product = Product.objects.get(pk=i_item['product_id'].id)
+        i_product.price_calc = i_item['price_calc'] * ratio
+        i_product.save()
+        n_count_added += 1
+
+    log.append(f"Пересчет расчетных цен окончен. Всего цен пересчитано: {n_count_added}")
+
     return log

@@ -16,9 +16,9 @@
         <tr>
             <td style="text-align: center"> Статья затрат </td>
             <td style="text-align: center"> Цена </td>
+            <td style="text-align: center"> Кол-во </td>
             <td style="text-align: center"> % Отх(план) </td>
             <td style="text-align: center"> % Отх(факт) </td>
-            <td style="text-align: center"> Кол-во </td>
             <td style="text-align: center"> Доп.расход </td>
             <td style="text-align: center"> Сумма </td>
             <td style="text-align: center"> Порядок </td>
@@ -28,12 +28,12 @@
 
             <tr>
                 <td style="text-align: right"> {{ item.name }} </td>
-                <td style="text-align: right"> {{ item.price|default_if_none:"" }} </td>
+                <td style="text-align: right"> {{ item.price|default_if_none:""|floatformat:2 }} </td>
+                <td style="text-align: right"> {{ item.amount|default_if_none:"" }} </td>
                 <td style="text-align: right"> {{ item.waste_percent_plan|default_if_none:"" }} </td>
                 <td style="text-align: right"> {{ item.waste_percent_fact|default_if_none:"" }} </td>
-                <td style="text-align: right"> {{ item.amount|default_if_none:"" }} </td>
-                <td style="text-align: right"> {{ item.cost_add|default_if_none:"" }} </td>
-                <td style="text-align: right"> {{ item.summ }} </td>
+                <td style="text-align: right"> {{ item.cost_add|default_if_none:""|floatformat:2 }} </td>
+                <td style="text-align: right"> {{ item.summ|floatformat:2 }} </td>
                 <td style="text-align: right"> {{ item.sort|default_if_none:"" }} </td>
             </tr>
 
@@ -46,10 +46,29 @@
             <td style="text-align: right">  </td>
             <td style="text-align: right">  </td>
             <td style="text-align: right"> Итого: </td>
-            <td style="text-align: right"> {{ summ_total }} </td>
+            <td style="text-align: right"> {{ summ_total|floatformat:2 }} </td>
             <td style="text-align: right">  </td>
         </tr>
-
+        <tr>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right"> Коэффициент: </td>
+            <td style="text-align: right"> {{ ratio|floatformat:2 }} </td>
+            <td style="text-align: right">  </td>
+        </tr>
+        <tr>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right">  </td>
+            <td style="text-align: right"> Цена: </td>
+            <td style="text-align: right"> {{ price_shop|floatformat:2 }} </td>
+            <td style="text-align: right">  </td>
+        </tr>
 
       </table>
 
