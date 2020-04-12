@@ -354,6 +354,63 @@ def import_calculation_code():
     return log
 
 
+def test_import_calculation_code():
+    """
+        тестирование идентичности данных в калькуляции (файл эксель) и в базе данных
+        проверяются следующие ошибки:
+        1) в файле эксель есть статья затрат, а в базе данных нет
+        2) значение amount различается
+        3) значение cost_add различается
+        4) в базе данных есть статья затрат, а в файле эксель нет
+    """
+    from product.models import Calculation
+
+    log = [f"Тестирование идентичности строк калькуляции (файл эксель) и в базе данных"]
+
+    d_calculation = get_d_calculation(log)
+
+    n_count = 0
+
+    for i_calculation in d_calculation:
+        product_id = i_calculation['product_id']
+        cost_id = i_calculation['cost_id']
+        amount = i_calculation['amount']
+        cost_add = i_calculation['cost_add']
+        if not len(Calculation.objects.filter(product_id=product_id, cost_id=cost_id)):
+            log.append(f"Ошибка: В файле эксель есть статья затрат для {product_id.name},"
+                       f" а в базе данных нет: {cost_id.name}")
+            n_count += 1
+            continue
+
+        i_calculation_db = Calculation.objects.get(product_id=product_id, cost_id=cost_id)
+        if amount != i_calculation_db.amount:
+            log.append(f"Ошибка: В файле эксель количество = {amount}, "
+                       f"а в базе данных количество = {i_calculation_db.amount} "
+                       f"для {product_id.name} статья: {cost_id.name} (calculayion.id = {i_calculation_db.id})")
+            n_count += 1
+        if cost_add != i_calculation_db.cost_add:
+            log.append(f"Ошибка: В файле эксель расходы в денежном выражении = {cost_add}, "
+                       f"а в базе данных расходы = {i_calculation_db.cost_add} "
+                       f"для {product_id.name} статья: {cost_id.name} (calculayion.id = {i_calculation_db.id})")
+            n_count += 1
+
+    d_calculation_db = Calculation.objects.all()
+    for i_calculation_db in d_calculation_db:
+        product_id = i_calculation_db.product_id
+        cost_id = i_calculation_db.cost_id
+        # ищем простым перебором
+        for i_calculation in d_calculation:
+            if i_calculation['product_id'] == product_id and i_calculation['cost_id'] == cost_id:
+                break
+        else:
+            log.append(f"Ошибка: В базе данных есть статья затрат для {product_id.name},"
+                       f" а в файле эксель нет: {cost_id.name}")
+            n_count += 1
+
+    log.append(f"Тестирование окончено. Всего ошибок найдено: {n_count}")
+    return log
+
+
 def re_price_calc_code():
 
     from product.models import Calculation, Product

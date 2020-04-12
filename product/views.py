@@ -3,6 +3,7 @@ from .models import Product, Cost, Calculation
 from .unit_import import import_pricelist_code, import_cost_code, \
     import_calculation_code, \
     test_import_pricelist_code, test_import_cost_code, \
+    test_import_calculation_code, \
     re_price_calc_code
 
 
@@ -105,6 +106,12 @@ def test_import_pricelist(request):
 def test_import_cost(request):
     log = test_import_cost_code()
     return render(request, 'product/log_result.html', {'log': log})
+
+
+def test_import_calculation(request):
+    log = test_import_calculation_code()
+    return render(request, 'product/log_result.html', {'log': log})
+
 
 def re_price_calc(request):
     log = re_price_calc_code()
