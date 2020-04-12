@@ -13,4 +13,5 @@ urlpatterns = [
     path('import_calculation/', views.import_calculation, name='import_calculation'),
     path('test_import_pricelist/', views.test_import_pricelist, name='test_import_pricelist'),
     path('test_import_cost/', views.test_import_cost, name='test_import_cost'),
+    path('re_price_calc/', views.re_price_calc, name='re_price_calc'),
 ]
