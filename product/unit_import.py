@@ -74,6 +74,87 @@ def import_pricelist_code():
     return log
 
 
+def get_d_product_calculation():
+
+    f = r"static/data/себест общ новая.xlsx"
+
+    d_product = []
+
+    wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
+
+    for sheetname in wb.sheetnames:
+        if sheetname[0:4] != "себ ":
+            continue
+        ws = wb[sheetname]
+        columns = ws.max_column
+
+        for c in range(1, columns + 1):
+            name_calc = ws.cell(row=2, column=c).value
+            if not name_calc or not isinstance(name_calc, str):
+                continue
+            name_calc = del_double_space(name_calc.strip())
+            if not len(name_calc):
+                continue
+            # Символ # в начале наименования изделия означает, что изделие не импортируется (например, разрабатывается)
+            if name_calc[0] == "#":
+                continue
+
+            # подставляем метку серии в название
+            product_type = "unknown"
+            if sheetname[4:7] == "эко":
+                product_type = "э"
+            elif sheetname[4:9] == "станд":
+                product_type = "стандарт"
+            elif sheetname[4:12] == "мдф лайт":
+                product_type = "лайт"
+            elif sheetname[4:7] == "мдф":
+                product_type = "мдф"
+            elif sheetname[4:7] == "мдф":
+                product_type = "мдф"
+            elif sheetname[4:9] == "устар":
+                product_type = "прочее"
+
+            name_calc += " " + product_type
+
+            i_product = {
+                'name': name_calc
+            }
+
+            # проверяем на повторение
+            for i in d_product:
+                if i['name'] == i_product['name']:
+                    break
+            else:  # добавляем только уникальные позиции
+                d_product.append(i_product)
+
+        break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
+
+    return d_product
+
+
+def import_product_calculation_code():
+
+    log = [f"Импорт списка изделий из калькуляции - начало"]
+
+    d_product = get_d_product_calculation()
+
+    n_count_added = 0
+
+    # добавляем данные в базу данных
+    from product.models import Product
+    from django.contrib.auth.models import User
+    me = User.objects.get(username='alex')
+
+    for i_product in d_product:
+        name = i_product['name']
+        if not len(Product.objects.filter(name=name)):
+            Product.objects.create(author=me, name=name)
+            n_count_added += 1
+
+    log.append(f"Импорт окончен. Всего изделий в калькуляции: {len(d_product)}, из них импортировано: {n_count_added}")
+    return log
+
+
 def test_import_pricelist_code():
     """
         тестирование идентичности данных в прайслисте (файл эксель) и в базе данных
@@ -106,10 +187,59 @@ def test_import_pricelist_code():
 
     products = Product.objects.all()
     for i_product in products:
+
+        # сравниваем только изделия с фактической (задокументированной) ценой
+        if i_product.price_doc is None:
+            continue
+
         name = i_product.name
         # ищем простым перебором
         for i_pricelist in d_pricelist:
             if i_pricelist['name'] == name:
+                break
+        else:
+            log.append(f"Ошибка: В базе данных есть изделие, а в файле эксель нет: {name}")
+            n_count += 1
+
+    log.append(f"Тестирование окончено. Всего ошибок найдено: {n_count}")
+    return log
+
+
+def test_import_product_calculation_code():
+    """
+        тестирование идентичности списка изделий в калькуляции (файл эксель) и в базе данных
+        проверяются следующие ошибки:
+        1) в файле эксель есть изделие (name), а в базе данных нет
+        2) в базе данных есть изделие (name), а в файле эксель нет
+    """
+
+    from product.models import Product
+
+    log = [f"Тестирование идентичности списка изделий в калькуляции (файл эксель) и в базе данных"]
+
+    d_product = get_d_product_calculation()
+
+    n_count = 0
+
+    for i_product in d_product:
+        name = i_product['name']
+        if not len(Product.objects.filter(name=name)):
+            log.append(f"Ошибка: В файле эксель есть изделие, а в базе данных нет: {name}")
+            n_count += 1
+            continue
+
+    products = Product.objects.all()
+    for i_product_calc in products:
+
+        # сравниваем только изделия с рассчётной ценой
+        if i_product_calc.price_calc is None:
+            continue
+
+        name = i_product_calc.name
+
+        # ищем простым перебором
+        for i_product in d_product:
+            if i_product['name'] == name:
                 break
         else:
             log.append(f"Ошибка: В базе данных есть изделие, а в файле эксель нет: {name}")

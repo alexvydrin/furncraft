@@ -17,7 +17,7 @@
             <tr>
                 <td> <a href="{% url 'product_detail' pk=product.pk %}">{{ product.name }}</a> </td>
                 <td style="text-align: right"> {{ product.price_calc|default_if_none:"" }} </td>
-                <td style="text-align: right"> {{ product.price_doc }} </td>
+                <td style="text-align: right"> {{ product.price_doc|default_if_none:"" }} </td>
                 <!-- <td> {{product.published_date}} </td> -->
             </tr>
 
