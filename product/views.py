@@ -1,9 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Cost, Calculation
-from .unit_import import import_pricelist_code, import_cost_code, \
-    import_calculation_code, \
-    test_import_pricelist_code, test_import_cost_code, \
-    test_import_calculation_code, \
+from .unit_import import \
+    import_pricelist_code, test_import_pricelist_code, \
+    import_product_calculation_code, test_import_product_calculation_code, \
+    import_cost_code, test_import_cost_code, \
+    import_calculation_code, test_import_calculation_code, \
     re_price_calc_code
 
 
@@ -46,11 +47,11 @@ def product_detail(request, pk):
 
         item = {
             'name': calculation.cost_id.name,
-            'price': calculation.cost_id.price,
+            'price': calculation.cost_id.price or "",
             'waste_percent_plan': waste_percent_plan_for_table,
             'waste_percent_fact': waste_percent_fact_for_table,
-            'amount': calculation.amount,
-            'cost_add': calculation.cost_add,
+            'amount': calculation.amount or "",
+            'cost_add': calculation.cost_add or "",
             'sort': calculation.cost_id.sort,
             'summ': summ
         }
@@ -85,6 +86,16 @@ def test_main(request):
 
 def import_pricelist(request):
     log = import_pricelist_code()
+    return render(request, 'product/log_result.html', {'log': log})
+
+
+def import_product_calculation(request):
+    log = import_product_calculation_code()
+    return render(request, 'product/log_result.html', {'log': log})
+
+
+def test_import_product_calculation(request):
+    log = test_import_product_calculation_code()
     return render(request, 'product/log_result.html', {'log': log})
 
 
