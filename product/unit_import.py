@@ -259,6 +259,11 @@ def get_d_calculation(log):
             if not name_calc or not isinstance(name_calc, str):
                 continue
             name_calc = del_double_space(name_calc.strip())
+            if not len(name_calc):
+                continue
+            # Символ # в начале наименования изделия означает, что изделие не импортируется (например, разрабатывается)
+            if name_calc[0] == "#":
+                continue
 
             # подставляем метку серии в название
             product_type = "unknown"
@@ -369,7 +374,9 @@ def test_import_calculation_code():
 
     d_calculation = get_d_calculation(log)
 
-    n_count = 0
+    # начальное количество найденных ошибок равно количеству строк об ошибках, добавленных в вызываемой ранее функции
+    # минус строка-заголовок (1 штука)
+    n_count = len(log) - 1
 
     for i_calculation in d_calculation:
         product_id = i_calculation['product_id']
