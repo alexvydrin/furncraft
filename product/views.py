@@ -125,5 +125,48 @@ def test_import_calculation(request):
 
 
 def re_price_calc(request):
-    log = re_price_calc_code()
+    log = re_price_calc_code(mode="save")
     return render(request, 'product/log_result.html', {'log': log})
+
+
+def test_re_price_calc(request):
+    log = re_price_calc_code(mode="test")
+    return render(request, 'product/log_result.html', {'log': log})
+
+
+def test_total(request):
+    log_total = [f"Все тесты - начало"]
+    count_test = 0
+
+    log = test_import_pricelist_code()
+    del log[0]
+    del log[-1]
+    count_test += 1
+    log_total += log
+
+    log = test_import_product_calculation_code()
+    del log[0]
+    del log[-1]
+    count_test += 1
+    log_total += log
+
+    log = test_import_cost_code()
+    del log[0]
+    del log[-1]
+    count_test += 1
+    log_total += log
+
+    log = test_import_calculation_code()
+    del log[0]
+    del log[-1]
+    count_test += 1
+    log_total += log
+
+    log = re_price_calc_code(mode="test")
+    del log[0]
+    del log[-1]
+    count_test += 1
+    log_total += log
+
+    log_total.append(f"Все тесты - окончание. Выполнено тестов: {count_test}. Найдено ошибок: {len(log_total)-1}")
+    return render(request, 'product/log_result.html', {'log': log_total})
