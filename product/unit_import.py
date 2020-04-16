@@ -367,13 +367,16 @@ def test_import_cost_code():
     return log
 
 
-def get_d_calculation(log):
+def get_d_calculation(log, add_price_calc=False):
+
+    # if add_price_calc = True - добавляем еще информацию о расчетных ценах в файле
 
     from product.models import Product, Cost
 
     f = r"static/data/себест общ новая.xlsx"
 
     d_calculation = []
+    d_product_price_calc = []  # расчетная цена в файле эксель
 
     wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
 
@@ -435,6 +438,15 @@ def get_d_calculation(log):
 
                     # условие выхода их цикла - статьи кончились
                     if name == "себестоимость":
+
+                        # если нужно выводить дополнительно данные о рассчитанных ценах в файле эксель
+                        if add_price_calc:
+                            i_product_price_calc = {
+                                'product_id': product_id,
+                                'price_calc': ws.cell(row=r, column=c+1).value or 0
+                            }
+                            d_product_price_calc.append(i_product_price_calc)
+
                         break
 
                     # код статьи расходов
@@ -462,7 +474,10 @@ def get_d_calculation(log):
 
         break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
 
-    return d_calculation
+    if add_price_calc:
+        return d_calculation, d_product_price_calc
+    else:
+        return d_calculation
 
 
 def import_calculation_code():
@@ -498,11 +513,11 @@ def test_import_calculation_code():
         3) значение cost_add различается
         4) в базе данных есть статья затрат, а в файле эксель нет
     """
-    from product.models import Calculation
+    from product.models import Calculation, Product
 
     log = [f"Тестирование идентичности строк калькуляции (файл эксель) и в базе данных"]
 
-    d_calculation = get_d_calculation(log)
+    d_calculation, d_product_price_calc = get_d_calculation(log, add_price_calc=True)
 
     # начальное количество найденных ошибок равно количеству строк об ошибках, добавленных в вызываемой ранее функции
     # минус строка-заголовок (1 штука)
@@ -543,6 +558,17 @@ def test_import_calculation_code():
             log.append(f"Ошибка: В базе данных есть статья затрат для {product_id.name},"
                        f" а в файле эксель нет: {cost_id.name}")
             n_count += 1
+
+    # проверка рассчитанных цен в файле эксель и в базе данных
+    for i_product_price_calc in d_product_price_calc:
+        i_product_db = Product.objects.get(id=i_product_price_calc['product_id'].id)
+        price_calc_db = round(float(i_product_db.price_calc), 2)
+        # TODO: вынести коэффициент в настройки, пока в целях отладки прописываем в коде
+        price_calc_file = round(i_product_price_calc['price_calc'] * 1.36 * 1.4, 2)
+
+        if price_calc_db != price_calc_file:
+            log.append(f"Ошибка: В файле эксель у изделия {i_product_db.name} "
+                       f"рассчитанная цена = {price_calc_file} а в базе данных = {price_calc_db}")
 
     log.append(f"Тестирование окончено. Всего ошибок найдено: {n_count}")
     return log
