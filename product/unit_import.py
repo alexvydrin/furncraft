@@ -538,12 +538,12 @@ def test_import_calculation_code():
         if amount != i_calculation_db.amount:
             log.append(f"Ошибка: В файле эксель количество = {amount}, "
                        f"а в базе данных количество = {i_calculation_db.amount} "
-                       f"для {product_id.name} статья: {cost_id.name} (calculayion.id = {i_calculation_db.id})")
+                       f"для {product_id.name} статья: {cost_id.name} (calculation.id = {i_calculation_db.id})")
             n_count += 1
         if cost_add != i_calculation_db.cost_add:
             log.append(f"Ошибка: В файле эксель расходы в денежном выражении = {cost_add}, "
                        f"а в базе данных расходы = {i_calculation_db.cost_add} "
-                       f"для {product_id.name} статья: {cost_id.name} (calculayion.id = {i_calculation_db.id})")
+                       f"для {product_id.name} статья: {cost_id.name} (calculation.id = {i_calculation_db.id})")
             n_count += 1
 
     d_calculation_db = Calculation.objects.all()
@@ -574,13 +574,16 @@ def test_import_calculation_code():
     return log
 
 
-def re_price_calc_code():
+def re_price_calc_code(mode="save"):
 
     from product.models import Calculation, Product
 
-    log = [f"Пересчет расчетных цен - начало"]
+    if mode == "test":
+        log = [f"Тестирование расчетных цен - начало"]
+    else:
+        log = [f"Пересчет расчетных цен - начало"]
 
-    n_count_added = 0
+    n_count = 0
 
     calculations = Calculation.objects.all()
 
@@ -616,12 +619,23 @@ def re_price_calc_code():
     ratio_shop = 1.4
     # общий коэффициент
     ratio = ratio_storage * ratio_shop
+
     for i_item in items:
         i_product = Product.objects.get(pk=i_item['product_id'].id)
-        i_product.price_calc = i_item['price_calc'] * ratio
-        i_product.save()
-        n_count_added += 1
+        new_price = round(i_item['price_calc'] * ratio, 2)
+        old_price = round(float(i_product.price_calc), 2)
+        if mode == "test":
+            if new_price != old_price:
+                log.append(f"Ошибка:  у изделия {i_product.name}  рассчитанная цена = {new_price}"
+                           f" а в базе данных сейчас = {old_price}")
+        else:
+            i_product.price_calc = new_price
+            i_product.save()
+        n_count += 1
 
-    log.append(f"Пересчет расчетных цен окончен. Всего цен пересчитано: {n_count_added}")
+    if mode == "test":
+        log.append(f"Тестирование расчетных цен окончено. Всего цен проверено: {n_count}")
+    else:
+        log.append(f"Пересчет расчетных цен окончен. Всего цен пересчитано: {n_count}")
 
     return log
