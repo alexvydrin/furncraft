@@ -1,6 +1,6 @@
 
 {% extends 'product/base.html' %}
-
+{% load static %}
 {% block content %}
 
     <table>
@@ -10,6 +10,7 @@
             <td style="text-align: center"> Цена расчетная </td>
             <td style="text-align: center"> Цена факт </td>
             <td style="text-align: center"> На сайте </td>
+            <td style="text-align: center"> Паспорт </td>
             <!-- <td style="text-align: center"> Дата </td> -->
         </tr>
 
@@ -22,6 +23,12 @@
                 <td style="text-align: center">
                     {% if product.site_link %}
                          <a href={{product.site_link}}> сайт </a>
+                    {% endif %}
+                </td>
+                <td style="text-align: center">
+                    {% if product.passport_link %}
+                        <!-- <a href="{% static 'data/1.xlsx' %}" download>паспорт</a>  не работает -->
+                        <a href="#" download>паспорт</a>
                     {% endif %}
                 </td>
                 <!-- <td> {{product.published_date}} </td> -->
