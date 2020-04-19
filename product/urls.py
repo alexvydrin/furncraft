@@ -20,4 +20,5 @@ urlpatterns = [
     path('test_re_price_calc/', views.test_re_price_calc, name='test_re_price_calc'),
     path('test_total/', views.test_total, name='test_total'),
     path('test_site/', views.test_site, name='test_site'),
+    path('import_site_link/', views.import_site_link, name='import_site_link'),
 ]
