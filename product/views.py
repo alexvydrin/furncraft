@@ -6,6 +6,7 @@ from .unit_import import \
     import_cost_code, test_import_cost_code, \
     import_calculation_code, test_import_calculation_code, \
     re_price_calc_code
+from .unit_site import test_site_code
 
 
 def main(request):
@@ -173,58 +174,10 @@ def test_total(request):
 
 
 def test_site(request):
-    from bs4 import BeautifulSoup
-    import requests as req
+    log = test_site_code(mode="test")
+    return render(request, 'product/log_result.html', {'log': log})
 
-    log = ["Анализ изделий на сайте"]
 
-    count = 0
-    page = 1
-    links = []
-    first_name = ""
-
-    while True:
-
-        site = f"https://komfortm.ru/catalog/"
-        if page > 1:
-            site += f"?PAGEN_1={page}"
-
-        resp = req.get(site)
-
-        soup = BeautifulSoup(resp.text, 'lxml')
-
-        for tag in soup.find_all("div", {'class': 'product-info text-left'}):
-            tag_price = tag.find("div", {'class': 'product-price'}).span.meta.get('content')
-            name = f"{tag.h2.a.text}".strip()
-            if not first_name:
-                first_name = name
-            else:
-                if first_name == name:  # признак что листание страниц закончено на сайте
-                    page = -1
-                    break
-            price = f"{tag_price}".strip()
-            if price:
-                price = float(price)
-            else:
-                price = 0.0
-            link = {
-                'name': name,
-                'href': f"https://komfortm.ru{tag.h2.a.get('href')}",
-                'price': price
-            }
-            links.append(link)
-            count += 1
-
-        if page < 0:  # признак что листание страниц закончено на сайте
-            break
-
-        if page > 999:  # на всякий случай выход для устранения зацикливания
-            break
-
-        page += 1
-
-    for link in sorted(links, key=lambda x: x['name']):
-        log.append(f"{link['name']} = {link['price']}")
-    log.append(f"Проанализировано изделий: {count}")
-
+def import_site_link(request):
+    log = test_site_code(mode="import")
     return render(request, 'product/log_result.html', {'log': log})
