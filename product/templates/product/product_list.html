@@ -27,8 +27,7 @@
                 </td>
                 <td style="text-align: center">
                     {% if product.passport_link %}
-                        <!-- <a href="{% static 'data/1.xlsx' %}" download>паспорт</a>  не работает -->
-                        <a href="#" download>паспорт</a>
+                        <a href= "/media/{{product.passport_link}}" download>паспорт</a>
                     {% endif %}
                 </td>
                 <!-- <td> {{product.published_date}} </td> -->
