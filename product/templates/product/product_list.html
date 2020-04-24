@@ -28,7 +28,9 @@
                 <td style="text-align: center">
                     {% if product.passport_link %}
                         <a href= "/media/{{product.passport_link}}" download>паспорт</a>
+                        <a href= "{% url 'product_detail' pk=product.pk %}">тест</a>
                     {% endif %}
+                    <a href= "{% url 'product_passport_link' pk=product.pk %}">загрузить</a>
                 </td>
                 <!-- <td> {{product.published_date}} </td> -->
             </tr>
