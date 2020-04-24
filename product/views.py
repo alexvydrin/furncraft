@@ -72,6 +72,11 @@ def product_detail(request, pk):
                    'summ_total': summ_total, 'ratio': ratio, 'price_shop': price_shop})
 
 
+def product_passport_link(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'product/product_passport_link', {'product': product})
+
+
 def cost_list(request):
     costs = Cost.objects.order_by('sort')
     return render(request, 'product/cost_list.html', {'costs': costs})

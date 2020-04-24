@@ -1,0 +1,17 @@
+{% extends 'product/base.html' %}
+
+{% block content %}
+
+    <div class="product">
+        {% if product.published_date %}
+            <div class="date">
+                {{ product.published_date }}
+            </div>
+        {% endif %}
+        <h1>{{ product.name }}</h1>
+        <!-- <p>{{ product.text|linebreaksbr }}</p> -->
+    </div>
+
+    <h2>Паспорт: {{ product.passport_link }}</h2>
+
+{% endblock %}
