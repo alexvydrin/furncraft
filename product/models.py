@@ -6,7 +6,8 @@ from django.utils import timezone
 class Product(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     name = models.CharField(max_length=100, unique=True)
-    passport_link = models.CharField(blank=True, max_length=200, default="")
+    passport_link = models.CharField(blank=True, max_length=200, default="") # TODO: Заменить на passport_file
+    passport_file = models.FileField(upload_to='passports/', null=True, blank=True)
     site_link = models.CharField(blank=True, max_length=200, default="")
     description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(default=timezone.now)

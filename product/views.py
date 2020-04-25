@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Product, Cost, Calculation
 from .unit_import import \
     import_pricelist_code, test_import_pricelist_code, \
@@ -72,9 +72,32 @@ def product_detail(request, pk):
                    'summ_total': summ_total, 'ratio': ratio, 'price_shop': price_shop})
 
 
-def product_passport_link(request, pk):
+def product_passport_file(request, pk):
+    from .forms import ProductPassportfileForm
     product = get_object_or_404(Product, pk=pk)
-    return render(request, 'product/product_passport_link', {'product': product})
+
+    if request.method == "POST":
+        form = ProductPassportfileForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+
+            name_for_test = product.passport_file.name  # ситуация при корректировке - для аккуратности
+            if name_for_test and name_for_test[:11] == "passports /":
+                name_for_test = name_for_test[11:]
+
+            if name_for_test == f"Паспорт {product.name}.xlsx" or not product.passport_file:
+                product.save()
+                return redirect('product_list')
+            else:
+                log = \
+                    [f"[{name_for_test}] - Выбран файл",
+                     f"[Паспорт {product.name}.xlsx] - Нужен файл",
+                     f"Загрузка файла отменена"]
+                return render(request, 'product/log_result.html', {'log': log})
+    else:
+        form = ProductPassportfileForm(instance=product)
+
+    return render(request, 'product/product_passport_file.html', {'product': product, 'form': form})
 
 
 def cost_list(request):

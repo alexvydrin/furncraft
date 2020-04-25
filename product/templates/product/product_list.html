@@ -26,11 +26,11 @@
                     {% endif %}
                 </td>
                 <td style="text-align: center">
-                    {% if product.passport_link %}
-                        <a href= "/media/{{product.passport_link}}" download>паспорт</a>
+                    {% if product.passport_file %}
+                        <a href= "{{product.passport_file.url}}" download>паспорт</a>
                         <a href= "{% url 'product_detail' pk=product.pk %}">тест</a>
                     {% endif %}
-                    <a href= "{% url 'product_passport_link' pk=product.pk %}">загрузить</a>
+                    <a href= "{% url 'product_passport_file' pk=product.pk %}">загрузить</a>
                 </td>
                 <!-- <td> {{product.published_date}} </td> -->
             </tr>
