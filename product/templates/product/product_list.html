@@ -28,7 +28,7 @@
                 <td style="text-align: center">
                     {% if product.passport_file %}
                         <a href= "{{product.passport_file.url}}" download>паспорт</a>
-                        <a href= "{% url 'product_detail' pk=product.pk %}">тест</a>
+                        <a href= "{% url 'product_passport_test' pk=product.pk %}">тест</a>
                     {% endif %}
                     <a href= "{% url 'product_passport_file' pk=product.pk %}">загрузить</a>
                 </td>

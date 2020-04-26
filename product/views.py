@@ -7,6 +7,7 @@ from .unit_import import \
     import_calculation_code, test_import_calculation_code, \
     re_price_calc_code
 from .unit_site import test_site_code
+from .unit_passport import get_amount_from_passport
 
 
 def main(request):
@@ -70,6 +71,83 @@ def product_detail(request, pk):
     return render(request, 'product/product_detail.html',
                   {'product': product, 'items': sorted(items, key=lambda x: x['sort'] or 0),
                    'summ_total': summ_total, 'ratio': ratio, 'price_shop': price_shop})
+
+
+def product_passport_test(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    calculations = Calculation.objects.filter(product_id=pk)
+
+    log = []  # список ошибок, найденных в процессе тестирования
+
+    # Готовим таблицу для вывода
+    items = []
+    for calculation in calculations:
+        if calculation.amount:
+
+            # TODO: заменить эту заглушку на признак в базе данных материалы/работы
+            if calculation.cost_id.name.lower()[:6] in (
+                    "сборка",
+                    "распил",
+                    "фрезер",
+                    "поклей",
+                    "резка",
+                    "обрабо",
+                    "пазовк",
+                    "кромле"):
+                continue
+
+            item = {
+                'name': calculation.cost_id.name,
+                'amount': calculation.amount or "",
+                'sort': calculation.cost_id.sort,
+                'name_passport': "",
+                'amount_passport': ""
+            }
+            items.append(item)
+
+    # Получаем данные из паспорта
+    items_passport = get_amount_from_passport(product.passport_file.name, log)
+
+    for item_passport in items_passport:
+
+        # Ищем совпадения простым перебором
+        for item_iter in items:
+            # минимальная длина для сравнения минус 1, тогда например "гвоздь" = "Гвозди толевые"
+            min_len = min(len(item_iter["name"].strip()), len(item_passport["name"].strip())) - 1
+            # сравниваем если длина не менее 3 символов, иначе возможны непонятки
+            if min_len > 3 and\
+                    item_iter["name"].strip().lower()[:min_len] == item_passport["name"].strip().lower()[:min_len]:
+                item_iter['name_passport'] = item_passport["name"]
+                try:
+                    item_iter['amount_passport'] = round(item_passport["amount"],2)
+                except TypeError:
+                    item_iter['amount_passport'] = item_passport["amount"]
+                break
+        else:  # Если не нашли соответствия
+            item = {
+                'name': "",
+                'amount': "",
+                'sort': 100500,  # TODO: максимальная + 1
+                'name_passport': item_passport["name"]
+            }
+
+            try:
+                item['amount_passport'] = round(item_passport["amount"], 2)
+            except TypeError:
+                item['amount_passport'] = item_passport["amount"]
+
+            if item['amount_passport']:
+                items.append(item)
+
+    # TODO: расшифровывать все таблицы материалов в excel а не только ЛДСП
+    # пока будем предупреждать о том что не все данные считываются
+    for item in items:
+        if not item['name_passport'] and item["name"].strip().lower() in\
+                ("бронза", "двпо", "3 Д панель", "обложка", "мдф", "зеркало", "сатинат"):
+            item['name_passport'] = "(пока не тестируется)"
+
+    return render(request, 'product/product_passport_test.html',
+                  {'product': product, 'items': sorted(items, key=lambda x: x['sort'] or 0), 'log': log})
 
 
 def product_passport_file(request, pk):
@@ -197,7 +275,7 @@ def test_total(request):
     count_test += 1
     log_total += log
 
-    log_total.append(f"Все тесты - окончание. Выполнено тестов: {count_test}. Найдено ошибок: {len(log_total)-1}")
+    log_total.append(f"Все тесты - окончание. Выполнено тестов: {count_test}. Найдено ошибок: {len(log_total) - 1}")
     return render(request, 'product/log_result.html', {'log': log_total})
 
 
