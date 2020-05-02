@@ -85,10 +85,9 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'fc',
-            'USER': 'fc',
-            'PASSWORD': 'Alex123_',
-            'HOST': '127.0.0.1',
+            'OPTIONS': {
+                'read_default_file': os.path.join(BASE_DIR, 'my.cnf'),
+            }
         }
     }
 
