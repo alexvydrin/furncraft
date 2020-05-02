@@ -15,9 +15,13 @@ def main(request):
 
 
 def product_list(request):
-    # products = Product.objects.filter(published_date__lte=timezone.now()).order_by('published_date')
+    count_products = Product.objects.all().count()
+    count_passports = Product.objects.exclude(passport_file='').count()
+    count_links = Product.objects.exclude(site_link='').count()
     products = Product.objects.order_by('name')
-    return render(request, 'product/product_list.html', {'products': products})
+    return render(request, 'product/product_list.html', {'products': products, 'count_products': count_products,
+                                                         'count_passports': count_passports,
+                                                         'count_links': count_links})
 
 
 def product_detail(request, pk):

@@ -637,7 +637,7 @@ def re_price_calc_code(mode="save"):
     for i_item in items:
         i_product = Product.objects.get(pk=i_item['product_id'].id)
         new_price = round(i_item['price_calc'] * ratio, 2)
-        old_price = round(float(i_product.price_calc), 2)
+        old_price = round(float(i_product.price_calc or 0), 2)
         if mode == "test":
             if new_price != old_price:
                 log.append(f"Ошибка:  у изделия {i_product.name}  рассчитанная цена = {new_price}"
