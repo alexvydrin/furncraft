@@ -3,9 +3,35 @@
 {% load static %}
 {% block content %}
 
-    <p> Изделий: {{ count_products }}</p>
-    <p> Паспортов: {{ count_passports }}</p>
-    <p> Ссылок на сайт: {{ count_links }}</p>
+    <table border="1">
+        <tr>
+            <td>
+                <form method="POST" class="post-form">
+                    {% csrf_token %}
+                    Фрагмент наименования:
+                    <input type="text" name="name_substring" size="20">
+                    <br>
+                    Окончание наименования:
+                    <input type="text" name="name_endstring" size="20">
+                    <button type="submit" class="save btn btn-default">Найти</button>
+                </form>
+            </td>
+            <td rowspan="2">
+                <p> Изделий: {{ count_products }}</p>
+                <p> Паспортов: {{ count_passports }}</p>
+                <p> Ссылок на сайт: {{ count_links }}</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Текущий фильтр:
+                <br>
+                {{ str_filter }}
+            </td>
+        </tr>
+    </table>
+
+    <br>
 
     <table>
 

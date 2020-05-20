@@ -15,13 +15,40 @@ def main(request):
 
 
 def product_list(request):
-    count_products = Product.objects.all().count()
-    count_passports = Product.objects.exclude(passport_file='').count()
-    count_links = Product.objects.exclude(site_link='').count()
-    products = Product.objects.order_by('name')
-    return render(request, 'product/product_list.html', {'products': products, 'count_products': count_products,
+    # Определяем есть фильтр или нет
+    if request.method == "POST":
+        # здесь надо использовать фильтр
+
+        products = Product.objects.order_by('name')
+
+        name_substring = str(request.POST['name_substring'])
+        name_endstring = str(request.POST['name_endstring'])
+
+        str_filter = ""
+        if name_substring:
+            str_filter += f'фрагмент наименования = "{name_substring}" '
+            products = products.filter(name__icontains=name_substring)
+        if name_endstring:
+            str_filter += f'окончание наименования = "{name_endstring}" '
+            products = products.filter(name__iendswith=name_endstring)
+        if not str_filter:
+            str_filter = "все изделия"
+
+    else:
+        str_filter = "все изделия"
+        products = Product.objects.order_by('name')
+
+    # считаем итоги с учетом фильтра
+    count_products = products.count()
+    count_passports = products.exclude(passport_file='').count()
+    count_links = products.exclude(site_link='').count()
+
+    return render(request, 'product/product_list.html', {'products': products,
+                                                         'count_products': count_products,
                                                          'count_passports': count_passports,
-                                                         'count_links': count_links})
+                                                         'count_links': count_links,
+                                                         'str_filter': str_filter,
+                                                         })
 
 
 def product_detail(request, pk):
@@ -123,7 +150,7 @@ def product_passport_test(request, pk):
                     item_iter["name"].strip().lower()[:min_len] == item_passport["name"].strip().lower()[:min_len]:
                 item_iter['name_passport'] = item_passport["name"]
                 try:
-                    item_iter['amount_passport'] = round(item_passport["amount"],2)
+                    item_iter['amount_passport'] = round(item_passport["amount"], 2)
                 except TypeError:
                     item_iter['amount_passport'] = item_passport["amount"]
                 break
