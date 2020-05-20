@@ -15,6 +15,7 @@ import openpyxl
 
 """
 
+
 def del_double_space(s):
     while "  " in s:
         s = s.replace("  ", " ")
@@ -31,7 +32,7 @@ def get_d_pricelist():
 
     ws = wb['прайс']
     rows = ws.max_row
-    for c in range(4, 4 + 1):
+    for c in (4, 6):  # колонки эко и лайт
         for r in range(5, rows + 1):
             name = ws.cell(row=r, column=3).value
             if not name or not isinstance(name, str):
@@ -43,10 +44,14 @@ def get_d_pricelist():
                 break
 
             # подставляем метку серии в название
-            type_product = "э"  # эко
+            type_product = ""
+            if c == 4:  # эко
+                type_product = " э"
+            if c == 6:  # лайт
+                type_product = " л"
 
             i_product = {
-                'name': name + " " + type_product
+                'name': name + type_product
             }
 
             # проверяем на повторение
@@ -97,7 +102,11 @@ def get_d_product_calculation():
     wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
 
     for sheetname in wb.sheetnames:
-        if sheetname[0:4] != "себ ":
+        if sheetname[0:7] == "себ эко" or sheetname[0:12] == "себ мдф лайт":
+            # Пока только листы эко и лайт
+            pass
+        else:
+            # Остальные листы пока пропускаем
             continue
         ws = wb[sheetname]
         columns = ws.max_column
@@ -114,21 +123,19 @@ def get_d_product_calculation():
                 continue
 
             # подставляем метку серии в название
-            product_type = "unknown"
+            product_type = " unknown"
             if sheetname[4:7] == "эко":
-                product_type = "э"
+                product_type = " э"
             elif sheetname[4:9] == "станд":
-                product_type = "стандарт"
+                product_type = " стандарт"
             elif sheetname[4:12] == "мдф лайт":
-                product_type = "лайт"
+                product_type = " л"
             elif sheetname[4:7] == "мдф":
-                product_type = "мдф"
-            elif sheetname[4:7] == "мдф":
-                product_type = "мдф"
+                product_type = " мдф"
             elif sheetname[4:9] == "устар":
-                product_type = "прочее"
+                product_type = " прочее"
 
-            name_calc += " " + product_type
+            name_calc += product_type
 
             i_product = {
                 'name': name_calc
@@ -140,8 +147,6 @@ def get_d_product_calculation():
                     break
             else:  # добавляем только уникальные позиции
                 d_product.append(i_product)
-
-        break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
 
     return d_product
 
@@ -395,8 +400,14 @@ def get_d_calculation(log, add_price_calc=False):
     wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
 
     for sheetname in wb.sheetnames:
-        if sheetname[0:4] != "себ ":
+
+        if sheetname[0:7] == "себ эко" or sheetname[0:12] == "себ мдф лайт":
+            # Пока только листы эко и лайт
+            pass
+        else:
+            # Остальные листы пока пропускаем
             continue
+
         ws = wb[sheetname]
         columns = ws.max_column
         rows = ws.max_row
@@ -413,21 +424,19 @@ def get_d_calculation(log, add_price_calc=False):
                 continue
 
             # подставляем метку серии в название
-            product_type = "unknown"
+            product_type = " unknown"
             if sheetname[4:7] == "эко":
-                product_type = "э"
+                product_type = " э"
             elif sheetname[4:9] == "станд":
-                product_type = "стандарт"
+                product_type = " стандарт"
             elif sheetname[4:12] == "мдф лайт":
-                product_type = "лайт"
+                product_type = " л"
             elif sheetname[4:7] == "мдф":
-                product_type = "мдф"
-            elif sheetname[4:7] == "мдф":
-                product_type = "мдф"
+                product_type = " мдф"
             elif sheetname[4:9] == "устар":
-                product_type = "прочее"
+                product_type = " прочее"
 
-            name_calc += " " + product_type
+            name_calc += product_type
 
             # код изделия
             try:
@@ -485,8 +494,6 @@ def get_d_calculation(log, add_price_calc=False):
                         }
 
                         d_calculation.append(i_calculation)
-
-        break  # потом эту строчку уберем, сейчас импортируем только одну страницу эко
 
     if add_price_calc:
         return d_calculation, d_product_price_calc

@@ -74,10 +74,15 @@ def test_site_code(mode='test'):
     for link in links:
         name = link['name']
 
-        if name[-2:].lower() != ' э':
+        if name[-2:].lower() == ' э' or name[-2:].lower() == ' л':
+            # пока только эко и лайт
+            pass
+        else:
+            # остальные наименования не рассматриваем
             continue
 
-        if not len(Product.objects.filter(name=name)):
+        # if not len(Product.objects.filter(name=name)):
+        if not len(Product.objects.filter(name__iexact=name)):
             log.append(f"Ошибка: На сайте есть изделие, а в базе данных нет: {name}")
             n_count += 1
             continue
@@ -85,8 +90,8 @@ def test_site_code(mode='test'):
         price_site = link['price']
         href_site = link['href']
 
-        i_product = Product.objects.get(name=name)
-
+        # i_product = Product.objects.get(name=name)
+        i_product = Product.objects.get(name__iexact=name)
         if price_site != i_product.price_doc:
             log.append(f"Ошибка: На сайте цена = {price_site}, а в базе данных цена = {i_product.price_doc}:"
                        f" {name}")
