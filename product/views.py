@@ -43,7 +43,12 @@ def product_list(request):
     # считаем итоги с учетом фильтра
     count_products = products.count()
     count_passports = products.exclude(passport_file='').count()
-    count_offers = products.exclude(offer_file='').count()
+
+    # TODO: при удалении файла счетчик продолжает считать его как не удаленный - непонятка
+    # а у паспортов работает все нормально
+    # вариант как у паспортов: count_offers =products.exclude(offer_file='').count() - не работает
+    count_offers = products.filter(offer_file__icontains='').count()  # считает удаленные тоже
+
     count_links = products.exclude(site_link='').count()
 
     return render(request, 'product/product_list.html', {'products': products,
