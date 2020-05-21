@@ -209,6 +209,34 @@ def product_passport_file(request, pk):
     return render(request, 'product/product_passport_file.html', {'product': product, 'form': form})
 
 
+def product_offer_file(request, pk):
+    from .forms import ProductOfferfileForm
+    product = get_object_or_404(Product, pk=pk)
+
+    if request.method == "POST":
+        form = ProductOfferfileForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+
+            name_for_test = product.offer_file.name  # ситуация при корректировке - для аккуратности
+            if name_for_test and name_for_test[:8] == "offers /":
+                name_for_test = name_for_test[8:]
+
+            if name_for_test == f"КП {product.name}.jpg" or not product.offer_file:
+                product.save()
+                return redirect('product_list')
+            else:
+                log = \
+                    [f"[{name_for_test}] - Выбран файл",
+                     f"[КП {product.name}.jpg] - Нужен файл",
+                     f"Загрузка файла отменена"]
+                return render(request, 'product/log_result.html', {'log': log})
+    else:
+        form = ProductOfferfileForm(instance=product)
+
+    return render(request, 'product/product_offer_file.html', {'product': product, 'form': form})
+
+
 def cost_list(request):
     costs = Cost.objects.order_by('sort')
     return render(request, 'product/cost_list.html', {'costs': costs})
