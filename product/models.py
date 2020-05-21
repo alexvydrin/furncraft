@@ -8,6 +8,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100, unique=True)
     passport_link = models.CharField(blank=True, max_length=200, default="") # TODO: Заменить на passport_file
     passport_file = models.FileField(upload_to='passports/', null=True, blank=True)
+    offer_file = models.FileField(upload_to='offers/', null=True, blank=True)
     site_link = models.CharField(blank=True, max_length=200, default="")
     description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(default=timezone.now)

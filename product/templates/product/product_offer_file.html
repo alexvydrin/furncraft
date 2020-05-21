@@ -1,0 +1,29 @@
+{% extends 'product/base.html' %}
+
+{% block content %}
+
+    <div class="product">
+
+        {% if product.published_date %}
+            <div class="date">
+                {{ product.published_date }}
+            </div>
+        {% endif %}
+
+        <h1>{{ product.name }}</h1>
+
+    </div>
+
+    <hr>
+
+    <form enctype="multipart/form-data" method="POST" class="post-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <hr>
+        <button type="submit" class="save btn btn-default">Сохранить</button>
+    </form>
+
+    <hr>
+
+
+{% endblock %}

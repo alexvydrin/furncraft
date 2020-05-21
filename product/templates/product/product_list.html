@@ -41,6 +41,7 @@
             <td style="text-align: center"> Цена факт </td>
             <td style="text-align: center"> На сайте </td>
             <td style="text-align: center"> Паспорт </td>
+            <td style="text-align: center"> Комм.предл. </td>
             <!-- <td style="text-align: center"> Дата </td> -->
         </tr>
 
@@ -61,6 +62,12 @@
                         <a href= "{% url 'product_passport_test' pk=product.pk %}">тест</a>
                     {% endif %}
                     <a href= "{% url 'product_passport_file' pk=product.pk %}">загрузить</a>
+                </td>
+                <td style="text-align: center">
+                    {% if product.offer_file %}
+                        <a href= "{{product.offer_file.url}}" download>предложение</a>
+                    {% endif %}
+                    <a href= "{% url 'product_offer_file' pk=product.pk %}">загрузить</a>
                 </td>
                 <!-- <td> {{product.published_date}} </td> -->
             </tr>

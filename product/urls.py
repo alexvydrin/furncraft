@@ -7,6 +7,7 @@ urlpatterns = [
     path('product/<int:pk>/', views.product_detail, name='product_detail'),
     path('product_passport_file/<int:pk>/', views.product_passport_file, name='product_passport_file'),
     path('product_passport_test/<int:pk>/', views.product_passport_test, name='product_passport_test'),
+    path('product_offer_file/<int:pk>/', views.product_offer_file, name='product_offer_file'),
     path('costs/', views.cost_list, name='cost_list'),
     path('import_main/', views.import_main, name='import_main'),
     path('test_main/', views.test_main, name='test_main'),
