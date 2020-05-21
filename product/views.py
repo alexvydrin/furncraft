@@ -35,19 +35,25 @@ def product_list(request):
             str_filter = "все изделия"
 
     else:
+        name_substring = ""
+        name_endstring = ""
         str_filter = "все изделия"
         products = Product.objects.order_by('name')
 
     # считаем итоги с учетом фильтра
     count_products = products.count()
     count_passports = products.exclude(passport_file='').count()
+    count_offers = products.exclude(offer_file='').count()
     count_links = products.exclude(site_link='').count()
 
     return render(request, 'product/product_list.html', {'products': products,
                                                          'count_products': count_products,
                                                          'count_passports': count_passports,
+                                                         'count_offers': count_offers,
                                                          'count_links': count_links,
                                                          'str_filter': str_filter,
+                                                         'name_substring': name_substring,
+                                                         'name_endstring': name_endstring,
                                                          })
 
 
