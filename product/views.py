@@ -233,13 +233,15 @@ def product_offer_file(request, pk):
             if name_for_test and name_for_test[:8] == "offers /":
                 name_for_test = name_for_test[8:]
 
-            if name_for_test == f"КП {product.name}.jpg" or not product.offer_file:
+            if name_for_test == f"КП {product.name}.jpg" or \
+                    name_for_test == f"КП {product.name}.png" or \
+                    not product.offer_file:
                 product.save()
                 return redirect('product_list')
             else:
                 log = \
                     [f"[{name_for_test}] - Выбран файл",
-                     f"[КП {product.name}.jpg] - Нужен файл",
+                     f"[КП {product.name}.jpg] или [КП {product.name}.png] - Нужен файл",
                      f"Загрузка файла отменена"]
                 return render(request, 'product/log_result.html', {'log': log})
     else:
