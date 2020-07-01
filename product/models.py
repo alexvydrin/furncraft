@@ -6,7 +6,7 @@ from django.utils import timezone
 class Product(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     name = models.CharField(max_length=100, unique=True)
-    passport_link = models.CharField(blank=True, max_length=200, default="") # TODO: Заменить на passport_file
+    passport_link = models.CharField(blank=True, max_length=200, default="")  # TODO: Заменить на passport_file
     passport_file = models.FileField(upload_to='passports/', null=True, blank=True)
     offer_file = models.FileField(upload_to='offers/', null=True, blank=True)
     site_link = models.CharField(blank=True, max_length=200, default="")
@@ -44,3 +44,8 @@ class Calculation(models.Model):
     waste_percent = models.FloatField(blank=True, null=True)
     cost_add = models.FloatField(blank=True, null=True)
     description = models.CharField(blank=True, max_length=200)
+
+
+class Settings(models.Model):
+    name = models.CharField(max_length=20, unique=True, default="")
+    is_rewriting = models.BooleanField(blank=True, default=False)
