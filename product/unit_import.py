@@ -2,7 +2,7 @@ import openpyxl
 
 """
 функции для работы с excel-файлами
-    - прайс - Прайс Основной 2019октябрь_магазины.xlsx
+    - прайс - price_main.xlsx
     - расчет себестоимости - себест общ новая.xlsx
 1) импорт данных из excel-файлов
 2) тестирование идентичности данных из excel-файлов и в базе данных
@@ -16,6 +16,11 @@ import openpyxl
 """
 
 
+def get_setting_rewrite():
+    from product.models import Settings
+    return Settings.objects.get(name="main").is_rewriting
+
+
 def del_double_space(s):
     while "  " in s:
         s = s.replace("  ", " ")
@@ -24,7 +29,8 @@ def del_double_space(s):
 
 def get_d_pricelist():
 
-    f = r"static/data/Прайс Основной 2019октябрь_магазины.xlsx"
+    # f = r"static/data/Прайс Основной 2019октябрь_магазины.xlsx"
+    f = r"static/data/price_main.xlsx"
 
     d_pricelist = []
 
@@ -32,7 +38,7 @@ def get_d_pricelist():
 
     ws = wb['прайс']
     rows = ws.max_row
-    for c in (4, 6):  # колонки эко и лайт
+    for c in (4, 5):  # колонки эко и лайт
         for r in range(5, rows + 1):
             name = ws.cell(row=r, column=3).value
             if not name or not isinstance(name, str):
@@ -47,7 +53,7 @@ def get_d_pricelist():
             type_product = ""
             if c == 4:  # эко
                 type_product = " э"
-            if c == 6:  # лайт
+            if c == 5:  # лайт
                 type_product = " л"
 
             i_product = {
@@ -76,6 +82,7 @@ def import_pricelist_code():
     d_pricelist = get_d_pricelist()
 
     n_count_added = 0
+    n_count_changed = 0
 
     # добавляем данные в базу данных
     from product.models import Product
@@ -88,8 +95,18 @@ def import_pricelist_code():
         if not len(Product.objects.filter(name=name)):
             Product.objects.create(author=me, name=name, price_doc=price_doc)
             n_count_added += 1
+        else:
+            i_product = Product.objects.get(name=name)
+            if price_doc != i_product.price_doc:
+                if get_setting_rewrite():
+                    log.append(f"Изменение: В файле эксель цена = {price_doc},"
+                               f" а в базе данных цена = {i_product.price_doc} : {name}")
+                    i_product.price_doc = price_doc
+                    i_product.save()
+                    n_count_changed += 1
 
-    log.append(f"Импорт окончен. Всего изделий в прайсе: {len(d_pricelist)}, из них импортировано: {n_count_added}")
+    log.append(f"Импорт окончен. Всего изделий в прайсе: {len(d_pricelist)},"
+               f" из них импортировано: {n_count_added}, изменено: {n_count_changed}")
     return log
 
 
