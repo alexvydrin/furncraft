@@ -47,7 +47,14 @@ def product_list(request):
     # TODO: при удалении файла счетчик продолжает считать его как не удаленный - непонятка
     # а у паспортов работает все нормально
     # вариант как у паспортов: count_offers =products.exclude(offer_file='').count() - не работает
-    count_offers = products.filter(offer_file__icontains='').count()  # считает удаленные тоже
+    # count_offers = products.filter(offer_file__icontains='').count() # считает удаленные тоже
+    # Попытаемся сделать медленно, но правильно
+    # Сначала получим список всех изделий, затем в цикле проверим поле offer_file
+    count_offers = 0
+    for product in products:
+        # print(f"product = {product.name} offer_file={product.offer_file}")
+        if product.offer_file:
+            count_offers += 1
 
     count_links = products.exclude(site_link='').count()
 
