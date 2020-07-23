@@ -119,7 +119,7 @@ def get_d_product_calculation():
     wb = openpyxl.load_workbook(filename=f, read_only=False, data_only=True)
 
     for sheetname in wb.sheetnames:
-        if sheetname[0:7] == "себ эко" or sheetname[0:12] == "себ мдф лайт":
+        if sheetname[0:7] == "себ эко" or sheetname[0:12] == "себ лайт":
             # Пока только листы эко и лайт
             pass
         else:
@@ -145,10 +145,10 @@ def get_d_product_calculation():
                 product_type = " э"
             elif sheetname[4:9] == "станд":
                 product_type = " стандарт"
-            elif sheetname[4:12] == "мдф лайт":
+            elif sheetname[4:12] == "лайт":
                 product_type = " л"
-            elif sheetname[4:7] == "мдф":
-                product_type = " мдф"
+            # elif sheetname[4:7] == "милд":
+            #    product_type = " м"
             elif sheetname[4:9] == "устар":
                 product_type = " прочее"
 
@@ -332,6 +332,7 @@ def import_cost_code():
     log = [f"Импорт справочника затрат - начало"]
 
     n_count_added = 0
+    n_count_changed = 0
 
     d_cost = get_d_cost(log)
 
@@ -347,9 +348,18 @@ def import_cost_code():
         if not len(Cost.objects.filter(name=name)):
             Cost.objects.create(name=name, price=price, waste_percent=waste_percent, sort=sort)
             n_count_added += 1
+        else:
+            i_cost_edit = Cost.objects.get(name=name)
+            if price != i_cost_edit.price:
+                if get_setting_rewrite():
+                    log.append(f"Ошибка: В файле эксель цена = {price}, а в базе данных цена = {i_cost_edit.price}:"
+                               f" {name}")
+                    i_cost_edit.price = price
+                    i_cost_edit.save()
+                    n_count_changed += 1
 
     log.append(f"Импорт справочника затрат окончен. Всего затрат в калькуляции: {len(d_cost)}, "
-               f"из них импортировано: {n_count_added}")
+               f"из них импортировано: {n_count_added}, изменено: {n_count_changed}")
     return log
 
 
@@ -418,7 +428,7 @@ def get_d_calculation(log, add_price_calc=False):
 
     for sheetname in wb.sheetnames:
 
-        if sheetname[0:7] == "себ эко" or sheetname[0:12] == "себ мдф лайт":
+        if sheetname[0:7] == "себ эко" or sheetname[0:12] == "себ лайт":
             # Пока только листы эко и лайт
             pass
         else:
@@ -446,7 +456,7 @@ def get_d_calculation(log, add_price_calc=False):
                 product_type = " э"
             elif sheetname[4:9] == "станд":
                 product_type = " стандарт"
-            elif sheetname[4:12] == "мдф лайт":
+            elif sheetname[4:12] == "лайт":
                 product_type = " л"
             elif sheetname[4:7] == "мдф":
                 product_type = " мдф"
@@ -602,7 +612,7 @@ def test_import_calculation_code():
         i_product_db = Product.objects.get(id=i_product_price_calc['product_id'].id)
         price_calc_db = round(float(i_product_db.price_calc), 2)
         # TODO: вынести коэффициент в настройки, пока в целях отладки прописываем в коде
-        price_calc_file = round(i_product_price_calc['price_calc'] * 1.36 * 1.4, 2)
+        price_calc_file = round(i_product_price_calc['price_calc'] * 1.43 * 1.4, 2)
 
         if price_calc_db != price_calc_file:
             log.append(f"Ошибка: В файле эксель у изделия {i_product_db.name} "
@@ -652,7 +662,7 @@ def re_price_calc_code(mode="save"):
             items.append(item)
 
     # коэффициент наценки для получения оптовой цены - цена со склада
-    ratio_storage = 1.36
+    ratio_storage = 1.43
     # коэффициент наценки для получения розничной цены - цена в магазине
     ratio_shop = 1.4
     # общий коэффициент
