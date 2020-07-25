@@ -610,7 +610,10 @@ def test_import_calculation_code():
     # проверка рассчитанных цен в файле эксель и в базе данных
     for i_product_price_calc in d_product_price_calc:
         i_product_db = Product.objects.get(id=i_product_price_calc['product_id'].id)
-        price_calc_db = round(float(i_product_db.price_calc), 2)
+        if i_product_db is not None:
+            price_calc_db = round(float(i_product_db.price_calc), 2)
+        else:
+            price_calc_db = 0
         # TODO: вынести коэффициент в настройки, пока в целях отладки прописываем в коде
         price_calc_file = round(i_product_price_calc['price_calc'] * 1.43 * 1.4, 2)
 

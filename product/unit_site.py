@@ -116,7 +116,10 @@ def test_site_code(mode='test'):
         for i_product in products:
 
             # сравниваем только изделия с фактической (задокументированной) ценой
+            # и если в базе данных для изделия сушествует коммерческое предложение
             if i_product.price_doc is None:
+                continue
+            if not i_product.offer_file:
                 continue
 
             name = i_product.name
